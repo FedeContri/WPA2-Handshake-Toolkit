@@ -137,6 +137,9 @@ Watch the `airodump-ng` output and wait for a line similar to:
 WPA handshake: <BSSID>
 ```
 
+![Handshake capture](screenshots/5-handshake.png)
+
+
 The capture file is usually saved as `capture-01.cap`.
 
 
