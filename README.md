@@ -30,8 +30,8 @@ This repository contains an educational workflow for capturing WPA/WPA2-PSK hand
 To test this repository locally, clone it and run the provided scripts on a compatible Linux system:
 
 ```bash
-git clone https://github.com/<your-user>/coffecopy.git
-cd coffecopy
+git clone https://github.com/FedeContri/WPA2-Handshake-Toolkit.git
+cd WPA2-Handshake-Toolkit
 chmod +x Enable_Monitor_Mode.sh Disable_Monitor_Mode.sh
 ```
 
