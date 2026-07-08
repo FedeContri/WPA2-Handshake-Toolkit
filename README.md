@@ -32,7 +32,7 @@ To test this repository locally, clone it and run the provided scripts on a comp
 ```bash
 git clone https://github.com/FedeContri/WPA2-Handshake-Toolkit.git
 cd WPA2-Handshake-Toolkit
-chmod +x Enable_Monitor_Mode.sh Disable_Monitor_Mode.sh
+chmod +x scripts/Enable_Monitor_Mode.sh scripts/Disable_Monitor_Mode.sh
 ```
 
 
